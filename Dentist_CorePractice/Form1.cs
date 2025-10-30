@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -46,31 +47,46 @@ namespace Dentist_CorePractice
         }
         private void LoadDataButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                string patientCsvPath = "patients.csv";
-                string treatmentCsvPath = "treatments.csv";
+            //updated
+                //string patientCsvPath = "patients.csv";
+                //string treatmentCsvPath = "treatments.csv";
 
-                allPatientRecords = CsvParser.ReadAndValidateCsv<PatientRecord>(patientCsvPath);
-                allTreatmentRecords = CsvParser.ReadAndValidateCsv<TreatmentRecord>(treatmentCsvPath);
+                // Get file paths from the new text boxes
+                string patientCsvPath = patientCsvPathTextBox.Text;
+                string treatmentCsvPath = treatmentCsvPathTextBox.Text;
 
-                UpdatePatientGrid(allPatientRecords);
-                UpdateTreatmentGrid(allTreatmentRecords);
+                if (string.IsNullOrWhiteSpace(patientCsvPath) || string.IsNullOrWhiteSpace(treatmentCsvPath))
+                {
+                    MessageBox.Show("Please specify both Patient CSV and Treatment CSV file paths.", "Missing Files", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                
+                try
+                {
+                    allPatientRecords = CsvParser.ReadAndValidateCsv<PatientRecord>(patientCsvPath);
+                    allTreatmentRecords = CsvParser.ReadAndValidateCsv<TreatmentRecord>(treatmentCsvPath);
+                    UpdatePatientGrid(allPatientRecords);
+                    UpdateTreatmentGrid(allTreatmentRecords);
 
-                RunValidationButton.Enabled = true;
-                IngestDataButton.Enabled = false; 
-                tabControl1.SelectedTab = tabControl1.TabPages[0];
+                    RunValidationButton.Enabled = true;
+                    IngestDataButton.Enabled = false;
+                    tabControl1.SelectedTab = tabControl1.TabPages[0];
 
-                RtbValidationBox.Text = "Data loaded successfully. Click '2. Run Validation' to analyze and filter records.";
-            }
-            catch (FileNotFoundException ex)
-            {
-                MessageBox.Show($"Error loading CSV file: {ex.FileName}. Please ensure the file is present.", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An unexpected error occurred during file loading: {ex.Message}", "Loading Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+                    RtbValidationBox.Text = "Data loaded successfully. Click '2. Run Validation' to analyze and filter records.";
+
+                }
+                catch(FileNotFoundException ex)
+                {
+                    MessageBox.Show($"Error loading CSV file: {ex.FileName}. Please ensure the file exists at the specified path.", "File Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An unexpected error occurred during file loading: {ex.Message}", "Loading Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+
+         
+
+
         }
 
         private void RunValidationButton_Click(object sender, EventArgs e)
@@ -278,6 +294,49 @@ namespace Dentist_CorePractice
             {
                 MessageBox.Show($"Error copying to clipboard: {ex.Message}", "Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+
+
+        private void browseTreatmentCsvButton_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = Environment.CurrentDirectory;
+                openFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    treatmentCsvPathTextBox.Text = openFileDialog.FileName;
+                }
+            }
+        }
+
+        private void BrowsePatientCsvButton_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = Environment.CurrentDirectory;
+                openFileDialog.Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*";
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    patientCsvPathTextBox.Text = openFileDialog.FileName;
+                }
+            }
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void RtbValidationBox_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 
